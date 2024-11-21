@@ -16,7 +16,7 @@ This program aims to give every user a new wordlist every time it is ran from a 
 ## Requirements
 
 - Python 3.6 or higher
-- NLTK library
+- NLTK python library
 
 ## Example head of txt file generated, it goes to 66666
 
