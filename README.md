@@ -17,3 +17,18 @@ This program aims to give every user a new wordlist every time it is ran from a 
 
 - Python 3.6 or higher
 - NLTK library
+
+## Example head of txt file generated, it goes to 66666
+
+```
+11111	hottentot
+11112	esterize
+11113	deism
+11114	mailless
+11115	smartish
+11116	fiber
+11117	petioliventres
+11118	scalelike
+11119	homograph
+11120	orphism
+```
