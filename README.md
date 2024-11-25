@@ -32,3 +32,5 @@ This program aims to give every user a new wordlist every time it is ran from a 
 11119	homograph
 11120	orphism
 ```
+## Tips
+Execute the script using "python diceware-wordlist-generator.py" rather than "./diceware-wordlist-generator.py" and instead of double-clicking as for some reason (at least on my systems) it made it makes it run much, much faster, but the inital run may take some time depending on your download speed.
