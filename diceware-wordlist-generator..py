@@ -16,10 +16,6 @@ def generate_diceware_list():
     
     print(f"Total words found with 5 or more letters: {len(filtered_words)}")
     
-    # Ensure we have enough words for identifiers from 11111 to 66666 (55,556 total)
-    if len(filtered_words) < 55556:
-        raise ValueError("Not enough words in the corpus to assign a unique identifier from 11111 to 66666.")
-    
     print("Selecting 55,556 random words...")
     selected_words = random.sample(filtered_words, 55556)
     
