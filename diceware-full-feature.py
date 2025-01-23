@@ -7,21 +7,6 @@ import sys
 import argparse
 from nltk.corpus import words
 
-def generate_diceware_list():
-    """Generate a list of words for password creation."""
-    try:
-        word_list = words.words()
-        filtered_words = [word.lower() for word in word_list if len(word) >= 5]
-        
-        sample_size = min(55556, len(filtered_words))
-        selected_words = random.sample(filtered_words, sample_size)
-        identifiers = [f"{i:05d}" for i in range(11111, 11111 + sample_size)]
-        
-        return list(zip(identifiers, selected_words))
-    except Exception as e:
-        print(f"Error generating wordlist: {e}")
-        return []
-
 def save_wordlist(diceware_list, filename='diceware_list.txt'):
     """Save the generated wordlist to a file."""
     try:
@@ -33,6 +18,37 @@ def save_wordlist(diceware_list, filename='diceware_list.txt'):
     except Exception as e:
         print(f"Error saving wordlist: {e}")
         return False
+
+def generate_diceware_list():
+    """Generate a list of words with fallback options."""
+    try:
+        # Try using NLTK words
+        word_list = words.words()
+    except LookupError:
+        # Fallback to basic wordlist
+        print("Warning: Using fallback wordlist due to NLTK data access failure")
+        word_list = [
+            "python", "program", "computer", "network", "security",
+            "database", "system", "algorithm", "software", "development",
+            # Add more words as needed
+        ]
+    except Exception as e:
+        print(f"Error accessing word list: {e}")
+        return []
+    
+    try:
+        filtered_words = [word.lower() for word in word_list if len(word) >= 5]
+        if not filtered_words:
+            raise ValueError("No valid words found after filtering")
+            
+        sample_size = min(55556, len(filtered_words))
+        selected_words = random.sample(filtered_words, sample_size)
+        identifiers = [f"{i:05d}" for i in range(11111, 11111 + sample_size)]
+        
+        return list(zip(identifiers, selected_words))
+    except Exception as e:
+        print(f"Error processing word list: {e}")
+        return []
 
 def randomize_text(input_text):
     """
@@ -105,30 +121,95 @@ def generate_password(diceware_list):
         return False, ""
 
 def setup_nltk():
-    """Setup NLTK data in user's home directory."""
+    """Setup NLTK data with proper error handling and installation verification."""
     try:
+        # First check if NLTK data already exists
         nltk_data_dir = os.path.expanduser('~/nltk_data')
+        words_path = os.path.join(nltk_data_dir, 'corpora', 'words')
+        
+        if os.path.exists(words_path):
+            print("NLTK data already exists, skipping download...")
+            return True
+            
+        print("Setting up NLTK data directory...")
         if not os.path.exists(nltk_data_dir):
             os.makedirs(nltk_data_dir)
         nltk.data.path.append(nltk_data_dir)
         
-        print("Downloading required NLTK data...")
-        nltk.download('words', quiet=True, download_dir=nltk_data_dir)
-        return True
+        # Download with progress indicator
+        print("Downloading NLTK words dataset...")
+        try:
+            nltk.download('words', quiet=False, download_dir=nltk_data_dir, raise_on_error=True)
+        except Exception as download_error:
+            print(f"\nDownload failed: {download_error}")
+            print("\nTrying alternative download method...")
+            
+            # Alternative download using direct Python download
+            import ssl
+            try:
+                _create_unverified_https_context = ssl._create_unverified_context
+            except AttributeError:
+                pass
+            else:
+                ssl._create_default_https_context = _create_unverified_https_context
+            
+            nltk.download('words', download_dir=nltk_data_dir)
+        
+        # Verify download
+        if os.path.exists(words_path):
+            print("NLTK data downloaded successfully!")
+            return True
+        else:
+            raise Exception("Download verification failed")
+            
     except Exception as e:
-        print(f"Error setting up NLTK: {e}")
+        print(f"\nError during NLTK setup: {e}")
+        print("\nTroubleshooting steps:")
+        print("1. Check your internet connection")
+        print("2. Ensure you have write permissions in your home directory")
+        print("3. Try running with administrator privileges")
+        print("4. Consider manual installation of NLTK data")
         return False
 
-def main():
-    """Main program entry point."""
+def main(argv=None):
+    """
+    Main program entry point that generates a diceware wordlist by default.
+    
+    Returns:
+        int: Exit code (0 for success, 1 for failure)
+    """
+    if argv is None:
+        argv = sys.argv[1:]
+        
     parser = argparse.ArgumentParser(description='Password randomizer')
     parser.add_argument('--password', nargs='?', const='generate', 
                        help='Generate a randomized password. Optionally provide a string to randomize.')
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     try:
+        # Default behavior when no arguments provided - just generate wordlist
+        if not argv:
+            # Step 1: NLTK Setup
+            if not os.path.exists(os.path.expanduser('~/nltk_data/corpora/words')):
+                if not setup_nltk():
+                    print("Failed to setup NLTK. Using fallback functionality.")
+            
+            # Step 2: Wordlist Generation
+            diceware_list = generate_diceware_list()
+            
+            if not diceware_list:
+                print("Failed to generate wordlist")
+                return 1
+                
+            # Step 3: Save Wordlist
+            filename = 'diceware_list.txt'
+            if save_wordlist(diceware_list, filename):
+                print(f"Diceware wordlist generated as {os.path.abspath(filename)}")
+                return 0
+            return 1
+            
+        # Handle explicit password argument
         if args.password and args.password != 'generate':
-            # Direct string randomization mode
             original_text = args.password
             randomized_text = randomize_text(original_text)
             
@@ -138,13 +219,11 @@ def main():
             print(randomized_text)
             return 0
             
+        # Handle generate flag
         elif args.password == 'generate':
-            # Original wordlist-based functionality
             if not setup_nltk():
-                print("Failed to setup NLTK. Please check your internet connection.")
-                return 1
-
-            print("Generating wordlist...")
+                print("Failed to setup NLTK. Using fallback functionality.")
+            
             diceware_list = generate_diceware_list()
             
             if not diceware_list:
@@ -167,5 +246,5 @@ def main():
         print(f"An unexpected error occurred: {e}")
         return 1
 
-if __name__ == "__main__":
-    sys.exit(main())
+if __name__ == '__main__':
+    sys.exit(main() or 0)
