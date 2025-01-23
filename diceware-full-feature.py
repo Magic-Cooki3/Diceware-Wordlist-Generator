@@ -121,31 +121,43 @@ def setup_nltk():
 
 def main():
     """Main program entry point."""
-    if not setup_nltk():
-        print("Failed to setup NLTK. Please check your internet connection.")
-        return 1
-
-    parser = argparse.ArgumentParser(description='Diceware password generator')
-    parser.add_argument('--password', action='store_true', 
-                       help='Generate a randomized password')
+    parser = argparse.ArgumentParser(description='Password randomizer')
+    parser.add_argument('--password', nargs='?', const='generate', 
+                       help='Generate a randomized password. Optionally provide a string to randomize.')
     args = parser.parse_args()
 
     try:
-        print("Generating wordlist...")
-        diceware_list = generate_diceware_list()
-        
-        if not diceware_list:
-            print("Failed to generate wordlist")
-            return 1
+        if args.password and args.password != 'generate':
+            # Direct string randomization mode
+            original_text = args.password
+            randomized_text = randomize_text(original_text)
             
-        if not save_wordlist(diceware_list):
-            return 1
-        
-        if args.password:
+            print("\nOriginal text:")
+            print(original_text)
+            print("\nRandomized text:")
+            print(randomized_text)
+            return 0
+            
+        elif args.password == 'generate':
+            # Original wordlist-based functionality
+            if not setup_nltk():
+                print("Failed to setup NLTK. Please check your internet connection.")
+                return 1
+
+            print("Generating wordlist...")
+            diceware_list = generate_diceware_list()
+            
+            if not diceware_list:
+                print("Failed to generate wordlist")
+                return 1
+                
+            if not save_wordlist(diceware_list):
+                return 1
+            
             success, _ = generate_password(diceware_list)
             if not success:
                 return 1
-                
+            
         return 0
             
     except KeyboardInterrupt:
