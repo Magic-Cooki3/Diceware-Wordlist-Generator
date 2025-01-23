@@ -12,7 +12,7 @@ This program aims to give every user a new wordlist every time it is ran from a 
 - Each identifier is paired with a randomly selected word from the NLTK English words corpus.
 - All words are guaranteed to be at least 5 letters long.
 - Saves the output to a text file in a simple and easy-to-read format.
-- create a new diceware list, select 6 random words, and then randomize it and output it all with one command!
+- create a new diceware list, select 6 random words, and then randomize it and output it, all with one command!
    - example: ./full-feature.py --password
 - randomize any string, like a diceware password you generated using real dice!
    - example: ./full-feature.py --password {insert string here}
