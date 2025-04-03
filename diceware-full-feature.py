@@ -1,11 +1,14 @@
 #!/usr/bin/env python
-import random
+import secrets
 import string
 import nltk
 import os
 import sys
 import argparse
 from nltk.corpus import words
+
+# Create a secure random generator using secrets.SystemRandom
+secure_random = secrets.SystemRandom()
 
 def save_wordlist(diceware_list, filename='diceware_list.txt'):
     """Save the generated wordlist to a file."""
@@ -42,7 +45,7 @@ def generate_diceware_list():
             raise ValueError("No valid words found after filtering")
             
         sample_size = min(55556, len(filtered_words))
-        selected_words = random.sample(filtered_words, sample_size)
+        selected_words = secure_random.sample(filtered_words, sample_size)
         identifiers = [f"{i:05d}" for i in range(11111, 11111 + sample_size)]
         
         return list(zip(identifiers, selected_words))
@@ -67,18 +70,18 @@ def randomize_text(input_text):
     symbols = '$@#!&*()%'
     
     def insert_random(char_list, items, min_count, max_count):
-        count = random.randint(min_count, max_count)
+        count = secure_random.randint(min_count, max_count)
         for _ in range(count):
-            pos = random.randint(0, len(char_list))
-            char_list.insert(pos, random.choice(items))
+            pos = secure_random.randint(0, len(char_list))
+            char_list.insert(pos, secure_random.choice(items))
         return char_list
 
     # Add required capitalization
     letter_positions = [i for i, char in enumerate(text_list) if char.isalpha()]
     if letter_positions:
-        caps_count = random.randint(1, max(2, len(letter_positions) // 3))
+        caps_count = secure_random.randint(1, max(2, len(letter_positions) // 3))
         for _ in range(caps_count):
-            pos = random.choice(letter_positions)
+            pos = secure_random.choice(letter_positions)
             text_list[pos] = text_list[pos].upper()
             letter_positions.remove(pos)
 
@@ -96,7 +99,6 @@ def randomize_text(input_text):
     
     return result.strip()  # Remove leading/trailing spaces
 
-
 def generate_password(diceware_list):
     """Generate a password from the wordlist."""
     if not diceware_list:
@@ -104,7 +106,7 @@ def generate_password(diceware_list):
         return False, ""
         
     try:
-        selected_words = random.sample([word for _, word in diceware_list], 
+        selected_words = secure_random.sample([word for _, word in diceware_list], 
                                      min(6, len(diceware_list)))
         passphrase = ' '.join(selected_words)
         randomized_passphrase = randomize_text(passphrase)
@@ -205,6 +207,8 @@ def main(argv=None):
             filename = 'diceware_list.txt'
             if save_wordlist(diceware_list, filename):
                 print(f"Diceware wordlist generated as {os.path.abspath(filename)}")
+                print(50*"-")
+                print(f"    - to generate a wordlist, get a passphrase, then have it randomized run the program with the '--password' flag\n    - to enter your own passphrase to have it randomized add a string after the flag ex: '--password [enter string here]")
                 return 0
             return 1
             
