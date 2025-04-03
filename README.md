@@ -6,6 +6,8 @@ The idea is that you roll 5 6-sided dice, put them in a random order, correlate 
 
 This program aims to give every user a new wordlist every time it is ran from a wordbank of over 250,000 english words. This way no one will ever have the same password as anyone else and it can be deleted and not narrowed down to what wordlist you used.
 
+NOTE: Use full-feature for best security, the others still use random, full-feature is the only one to be updated to use secrets for optimal security
+
 ## Features
 
 - Generates a list of unique identifiers ranging from `11111` to `66666`.
